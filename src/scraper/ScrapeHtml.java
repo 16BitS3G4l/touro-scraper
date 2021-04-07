@@ -13,6 +13,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.text.html.parser.Element;
+
 public class ScrapeHtml implements Runnable {
 
 
@@ -39,8 +41,12 @@ public class ScrapeHtml implements Runnable {
             }
             System.out.println("Page to parse: ");
             // Do ALL the parsing here
+
             ArrayList<String> internalLinks = getInternalLinks(pageToParse);
-            // addInternalLinksToQueue(internalLinks);
+            //add internalLinks to urlsToDownload queue, iterate over list adn add to queue
+            for (String url : internalLinks) {
+                urlsToDownload.add(url);
+            }
         }
     }
 
@@ -55,7 +61,8 @@ public class ScrapeHtml implements Runnable {
             boolean add = syncedPaintedUrls.add(url);
             if (add && isValidInternalURL(url)) {
                 System.out.println(url);
-                urlsToDownload.add(url);
+                //changed this to add to internalUrls list as opposed to urlsToDownload
+                internalUrls.add(url);
             }
         });
         return internalUrls;
@@ -70,6 +77,7 @@ public class ScrapeHtml implements Runnable {
 
     private boolean isValidInternalURL(String url) {
         for(String listItem : internalSites)
+            // I think regex would be the better approach here
             if(url.contains(listItem) && !url.contains("@"))
                 return true;
         return false;
