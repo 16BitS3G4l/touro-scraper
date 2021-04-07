@@ -57,10 +57,63 @@ public class ScrapeHtml implements Runnable {
             ArrayList<String> phoneNumbers = getPhoneNumbers(pageToParse);
             //set phone numbers to currentPages phon number list in sync block
 
-            ArrayList<String> emails = getEmails(pageToParse);      
+            ArrayList<String> emails = getEmails(pageToParse);     
+            
+            ArrayList<String> dates = getDates(pageToParse);  
+
+            ArrayList<String> facebookLinks = getFacebookLinks(pageToParse);
+            
 
             //parse for two non trivial
         }
+    }
+
+    private ArrayList<String> getFacebookLinks(Document pageToParse) {
+        if(pageToParse == null){
+            return null;
+        }
+        ArrayList<String> facebookLinks = new ArrayList<>();
+
+        //yehoshua will do regex... review
+        String regex_num = "facebook.com";
+        Pattern pattern = Pattern.compile(regex_num);
+
+        // get phone numbers on page with regex
+        Elements links = pageToParse.getElementsMatchingOwnText(pattern);
+        
+        if(!links.isEmpty()){
+            for (Element e : links) {
+                Matcher matcher = pattern.matcher(e.text());
+                while(matcher.find()) {
+                    facebookLinks.add(matcher.group(0));
+                }
+            }
+        }
+        return facebookLinks;
+    }
+
+    private ArrayList<String> getDates(Document pageToParse) {
+        if(pageToParse == null){
+            return null;
+        }
+        ArrayList<String> Dates = new ArrayList<>();
+
+        //yehoshua will do regex
+        String regex_num = "";
+        Pattern pattern = Pattern.compile(regex_num);
+
+        // get phone numbers on page with regex
+        Elements dates = pageToParse.getElementsMatchingOwnText(pattern);
+        
+        if(!dates.isEmpty()){
+            for (Element e : dates) {
+                Matcher matcher = pattern.matcher(e.text());
+                while(matcher.find()) {
+                    Dates.add(matcher.group(0));
+                }
+            }
+        }
+        return Dates;
     }
 
     private ArrayList<String> getEmails(Document pageToParse) {
