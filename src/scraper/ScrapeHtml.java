@@ -79,7 +79,7 @@ public class ScrapeHtml implements Runnable {
     }
 
     private boolean isValidExternalUrl(String url) {
-        return false;
+        return url.matches("https://www.(?!touro.edu)[a-zA-Z0-9./]*\n");
     }
 
     private ArrayList<String> getInternalLinks(Document pageToParse) {
