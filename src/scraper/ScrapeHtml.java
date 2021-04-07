@@ -47,7 +47,39 @@ public class ScrapeHtml implements Runnable {
             for (String url : internalLinks) {
                 urlsToDownload.add(url);
             }
+            
+            //external urls
+            ArrayList<String> externalLinks = getExternalLinks(pageToParse);
+            //phone numbers
+            //email addresses
+            //
         }
+    }
+
+    private ArrayList<String> getExternalLinks(Document pageToParse) {
+        if(pageToParse == null){
+            return null;
+        }
+        Elements links = pageToParse.select("a[href]");
+        if(links.isEmpty()){
+            return null;
+        }
+        ArrayList<String> externalUrls = new ArrayList<>();
+        links.stream().map((link) -> link.attr("abs:href")).forEachOrdered((url) -> {
+            url = cleanedURL(url);
+            if(isValidExternalUrl(url)){
+                //do we want to print this out? We will print out currentPage class
+                // System.out.println(url);
+                externalUrls.add(url);
+            }
+        });
+
+        return externalUrls;
+
+    }
+
+    private boolean isValidExternalUrl(String url) {
+        return false;
     }
 
     private ArrayList<String> getInternalLinks(Document pageToParse) {
@@ -61,7 +93,7 @@ public class ScrapeHtml implements Runnable {
             boolean add = syncedPaintedUrls.add(url);
             if (add && isValidInternalURL(url)) {
                 System.out.println(url);
-                //changed this to add to internalUrls list as opposed to urlsToDownload
+                //confusing that this func doesnt just get links rather actually adds them to urlsToDownload queue
                 internalUrls.add(url);
             }
         });
@@ -91,6 +123,11 @@ public class ScrapeHtml implements Runnable {
     // add internal urls to the queue.
     //      only if it is not already in the painted set..
     //      lock on when adding to the painted set
+
+
+    // We need a synchronized class currentPage that will be overriden at the end of each thread. 
+    // This will keep live results of what page we are up to and what internal links, external links, phone number, and emails
+    // are on that page. This class will also have a current page count.
 
 
 }
