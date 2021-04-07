@@ -55,12 +55,10 @@ public class ScrapeHtml implements Runnable {
             // set externalLinks to currentPage's externalLinks in sync block
 
             ArrayList<String> phoneNumbers = getPhoneNumbers(pageToParse);
+            //set phone numbers to currentPages phon number list in sync block
 
-
-
-            //phone numbers
-            //email addresses
-            //
+            //parse for emil addresses
+            //parse for two non trivial
         }
     }
 
