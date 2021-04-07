@@ -1,6 +1,7 @@
 package scraper;
 
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.security.cert.TrustAnchor;
@@ -12,8 +13,8 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-import javax.swing.text.html.parser.Element;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ScrapeHtml implements Runnable {
 
@@ -47,13 +48,44 @@ public class ScrapeHtml implements Runnable {
             for (String url : internalLinks) {
                 urlsToDownload.add(url);
             }
+            // set internalLinks to currentPage's internalLinks in sync block
             
             //external urls
             ArrayList<String> externalLinks = getExternalLinks(pageToParse);
+            // set externalLinks to currentPage's externalLinks in sync block
+
+            ArrayList<String> phoneNumbers = getPhoneNumbers(pageToParse);
+
+
+
             //phone numbers
             //email addresses
             //
         }
+    }
+
+    private ArrayList<String> getPhoneNumbers(Document pageToParse) {
+        if(pageToParse == null){
+            return null;
+        }
+        ArrayList<String> phoneNumbers = new ArrayList<>();
+
+        String regex_num = "\\(\\d{3}\\)(-| )\\d{3}(-| )\\d{3}";
+        Pattern pattern = Pattern.compile(regex_num);
+
+        // get phone numbers on page with regex
+        Elements numbers = pageToParse.getElementsMatchingOwnText(pattern);
+        
+        if(!numbers.isEmpty()){
+            for (Element num : numbers) {
+                Matcher matcher = pattern.matcher(num.text());
+                while(matcher.find()) {
+                    phoneNumbers.add(matcher.group(0));
+                }
+            }
+        }
+        return phoneNumbers;
+        
     }
 
     private ArrayList<String> getExternalLinks(Document pageToParse) {
@@ -73,13 +105,11 @@ public class ScrapeHtml implements Runnable {
                 externalUrls.add(url);
             }
         });
-
         return externalUrls;
-
     }
 
     private boolean isValidExternalUrl(String url) {
-        return url.matches("https://www.(?!touro.edu)[a-zA-Z0-9./]*\n");
+        return url.matches("https://www.(?!touro.edu)[a-zA-Z0-9./]*");
     }
 
     private ArrayList<String> getInternalLinks(Document pageToParse) {
