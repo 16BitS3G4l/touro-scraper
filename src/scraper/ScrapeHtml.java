@@ -57,9 +57,33 @@ public class ScrapeHtml implements Runnable {
             ArrayList<String> phoneNumbers = getPhoneNumbers(pageToParse);
             //set phone numbers to currentPages phon number list in sync block
 
-            //parse for emil addresses
+            ArrayList<String> emails = getEmails(pageToParse);      
+
             //parse for two non trivial
         }
+    }
+
+    private ArrayList<String> getEmails(Document pageToParse) {
+        if(pageToParse == null){
+            return null;
+        }
+        ArrayList<String> emailsAddresses = new ArrayList<>();
+
+        String regex_num = "[a-zA-Z\\d.]+@[a-zA-Z\\d.]+\\w{3}";
+        Pattern pattern = Pattern.compile(regex_num);
+
+        // get phone numbers on page with regex
+        Elements emails = pageToParse.getElementsMatchingOwnText(pattern);
+        
+        if(!emails.isEmpty()){
+            for (Element e : emails) {
+                Matcher matcher = pattern.matcher(e.text());
+                while(matcher.find()) {
+                    emailsAddresses.add(matcher.group(0));
+                }
+            }
+        }
+        return emailsAddresses;
     }
 
     private ArrayList<String> getPhoneNumbers(Document pageToParse) {
