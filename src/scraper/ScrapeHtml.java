@@ -99,7 +99,7 @@ public class ScrapeHtml implements Runnable {
         ArrayList<String> Dates = new ArrayList<>();
 
         //yehoshua will do regex
-        String regex_num = "";
+        String regex_num = "(January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}, \\d{4}";
         Pattern pattern = Pattern.compile(regex_num);
 
         // get phone numbers on page with regex
