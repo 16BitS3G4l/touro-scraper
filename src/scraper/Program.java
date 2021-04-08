@@ -13,7 +13,7 @@ public class Program {
 
     // https://stackoverflow.com/questions/616484/how-to-use-concurrentlinkedqueue/616505
     public static void main(String[] args) throws InterruptedException {
-        final String START_URL = "https://www.touro.edu/";
+        final String START_URL = "https://www.routine.co/";
         LinkedBlockingQueue<Document> downloadedPages = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<String> urlsToDownload = new LinkedBlockingQueue<>();
         Set<String> paintedUrls = new HashSet<>();
@@ -44,6 +44,17 @@ public class Program {
 
         while(!mostCurrentPageResult.isFinalPage()) {
 
+            if(mostCurrentPageResult.isChanged()) {
+                for(int i = 0; i < 100; i++)
+                    System.out.println();
+            }
+
+            synchronized (mostCurrentPageResult) {
+                mostCurrentPageResult.setChanged(false);
+            }
         }
+
+        // final page work
+
     }
 }

@@ -30,7 +30,7 @@ public class ScrapeHtml implements Runnable {
         this.urlsToDownload = urlsToDownload;
         this.downloadedPages = downloadedPages;
         this.syncedPaintedUrls = syncedPaintedUrls;
-        this.mostCurrentPageResult = mostCurrentPageResult;
+        this.mostCurrentPageResult = mostRecentPage;
     }
 
     @Override
@@ -76,9 +76,9 @@ public class ScrapeHtml implements Runnable {
                 mostCurrentPageResult.setPhoneNumbers(phoneNumbers);
                 mostCurrentPageResult.setChanged(true);
             }
-
-            //parse for two non trivial
         }
+
+        mostCurrentPageResult.setFinalPage(true);
     }
 
     private ArrayList<String> getFacebookLinks(Document pageToParse) {

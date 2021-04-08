@@ -24,7 +24,7 @@ public class CurrentPageResult {
         this.changed = changed;
     }
 
-    public boolean getChanged() {
+    public boolean isChanged() {
         return changed;
     }
 
