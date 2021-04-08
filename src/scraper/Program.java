@@ -33,10 +33,17 @@ public class Program {
         // to make sure that the scraper will start.
         Thread.sleep(10000);
 //        System.out.println(downloadedPages);
-        ScrapeHtml scrapeHtml = new ScrapeHtml(urlsToDownload, downloadedPages, syncedPaintedUrls);
+
+        CurrentPageResult mostCurrentPageResult = new CurrentPageResult();
+
+        ScrapeHtml scrapeHtml = new ScrapeHtml(urlsToDownload, downloadedPages, syncedPaintedUrls, mostCurrentPageResult);
         Thread thread1 = new Thread(scrapeHtml);
         Thread thread2 = new Thread(scrapeHtml);
         thread1.start();
         thread2.start();
+
+        while(!mostCurrentPageResult.isFinalPage()) {
+
+        }
     }
 }

@@ -23,12 +23,14 @@ public class ScrapeHtml implements Runnable {
     LinkedBlockingQueue<String> urlsToDownload;
     Set<String> paintedUrls = new HashSet<>();
     Set<String> syncedPaintedUrls;// all actions should be done through this one.
+    private CurrentPageResult mostCurrentPageResult;
     private String[] internalSites = new String[] {"touro.edu", "whatElseGoesHere"};
 
-    public ScrapeHtml(LinkedBlockingQueue<String> urlsToDownload, LinkedBlockingQueue<Document> downloadedPages, Set<String> syncedPaintedUrls) {
+    public ScrapeHtml(LinkedBlockingQueue<String> urlsToDownload, LinkedBlockingQueue<Document> downloadedPages, Set<String> syncedPaintedUrls, CurrentPageResult mostRecentPage) {
         this.urlsToDownload = urlsToDownload;
         this.downloadedPages = downloadedPages;
         this.syncedPaintedUrls = syncedPaintedUrls;
+        this.mostCurrentPageResult = mostCurrentPageResult;
     }
 
     @Override
@@ -48,6 +50,7 @@ public class ScrapeHtml implements Runnable {
             for (String url : internalLinks) {
                 urlsToDownload.add(url);
             }
+
             // set internalLinks to currentPage's internalLinks in sync block
             
             //external urls
@@ -62,7 +65,17 @@ public class ScrapeHtml implements Runnable {
             ArrayList<String> dates = getDates(pageToParse);  
 
             ArrayList<String> facebookLinks = getFacebookLinks(pageToParse);
-            
+
+
+            synchronized(mostCurrentPageResult) {
+                mostCurrentPageResult.setInternalLinks(internalLinks);
+                mostCurrentPageResult.setExternalLinks(externalLinks);
+                mostCurrentPageResult.setDates(dates);
+                mostCurrentPageResult.setEmails(emails);
+                mostCurrentPageResult.setFacebookLinks(facebookLinks);
+                mostCurrentPageResult.setPhoneNumbers(phoneNumbers);
+                mostCurrentPageResult.setChanged(true);
+            }
 
             //parse for two non trivial
         }

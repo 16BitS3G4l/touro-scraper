@@ -9,6 +9,24 @@ public class CurrentPageResult {
     private ArrayList<String> emails;
     private ArrayList<String> dates;
     private ArrayList<String> facebookLinks;
+    private boolean changed = false; // so the UI thread can wait until CurrentPageResult has been updated to look at it again, rather than keep polling it's data
+    private boolean finalPage; // to let the program know that the final page has been reached
+
+    public boolean isFinalPage() {
+        return finalPage;
+    }
+
+    public void setFinalPage(boolean finalPage) {
+        this.finalPage = finalPage;
+    }
+
+    public void setChanged(boolean changed) {
+        this.changed = changed;
+    }
+
+    public boolean getChanged() {
+        return changed;
+    }
 
     public ArrayList<String> getInternalLinks() {
         return internalLinks;
