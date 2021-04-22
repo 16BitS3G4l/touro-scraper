@@ -10,7 +10,7 @@ public class CurrentPageResult {
     private ArrayList<String> dates;
     private ArrayList<String> facebookLinks;
     private boolean changed = false; // so the UI thread can wait until CurrentPageResult has been updated to look at it again, rather than keep polling it's data
-    private boolean finalPage; // to let the program know that the final page has been reached
+    private boolean finalPage = false; // to let the program know that the final page has been reached
 
     public boolean isFinalPage() {
         return finalPage;

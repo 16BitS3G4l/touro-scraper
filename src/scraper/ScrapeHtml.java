@@ -24,7 +24,7 @@ public class ScrapeHtml implements Runnable {
     Set<String> paintedUrls = new HashSet<>();
     Set<String> syncedPaintedUrls;// all actions should be done through this one.
     private CurrentPageResult mostCurrentPageResult;
-    private String[] internalSites = new String[] {"touro.edu", "whatElseGoesHere"};
+    private String[] internalSites = new String[] {"touro.edu"};
 
     public ScrapeHtml(LinkedBlockingQueue<String> urlsToDownload, LinkedBlockingQueue<Document> downloadedPages, Set<String> syncedPaintedUrls, CurrentPageResult mostRecentPage) {
         this.urlsToDownload = urlsToDownload;
@@ -42,17 +42,25 @@ public class ScrapeHtml implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println("Page to parse: ");
+
+            //System.out.println("Page to parse: ");
             // Do ALL the parsing here
 
             ArrayList<String> internalLinks = getInternalLinks(pageToParse);
             //add internalLinks to urlsToDownload queue, iterate over list adn add to queue
-            for (String url : internalLinks) {
-                urlsToDownload.add(url);
+
+            if(internalLinks != null)
+            {
+                for (String url : internalLinks) {
+
+                    if (!syncedPaintedUrls.contains(url)) {
+                        urlsToDownload.add(url);
+                    }
+                }
             }
 
             // set internalLinks to currentPage's internalLinks in sync block
-            
+
             //external urls
             ArrayList<String> externalLinks = getExternalLinks(pageToParse);
             // set externalLinks to currentPage's externalLinks in sync block
@@ -78,7 +86,9 @@ public class ScrapeHtml implements Runnable {
             }
         }
 
-        mostCurrentPageResult.setFinalPage(true);
+        synchronized(mostCurrentPageResult) {
+            mostCurrentPageResult.setFinalPage(true);
+        }
     }
 
     private ArrayList<String> getFacebookLinks(Document pageToParse) {
@@ -197,7 +207,7 @@ public class ScrapeHtml implements Runnable {
     }
 
     private boolean isValidExternalUrl(String url) {
-        return url.matches("https://www.(?!touro.edu)[a-zA-Z0-9./]*");
+        return url.matches("https://www.(?!touro.edu)[a-zA-Z0-9./]*") || url.startsWith("./");
     }
 
     private ArrayList<String> getInternalLinks(Document pageToParse) {
