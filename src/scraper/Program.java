@@ -29,14 +29,44 @@ public class Program {
             }
         }.start();
 
+        // We need to color/paint the root
+        syncedPaintedUrls.add("https://www.touro.edu/");
+
         // This will not find anything and then just break out. find a better way.
         // to make sure that the scraper will start.
         Thread.sleep(10000);
 //        System.out.println(downloadedPages);
-        ScrapeHtml scrapeHtml = new ScrapeHtml(urlsToDownload, downloadedPages, syncedPaintedUrls);
+
+        CurrentPageResult mostCurrentPageResult = new CurrentPageResult();
+
+        ScrapeHtml scrapeHtml = new ScrapeHtml(urlsToDownload, downloadedPages, syncedPaintedUrls, mostCurrentPageResult);
         Thread thread1 = new Thread(scrapeHtml);
         Thread thread2 = new Thread(scrapeHtml);
         thread1.start();
         thread2.start();
+
+
+        while(!mostCurrentPageResult.isFinalPage()) {
+
+            synchronized(mostCurrentPageResult) {
+                if (mostCurrentPageResult.isChanged()) {
+
+                    // delete the previous results and display the most current ones
+                    // we can clear the terminal and then print our new results (option 1)
+                    for(int i = 0; i < 100; i++)
+                        System.out.println();
+
+                    System.out.println("URL of Webpage: ");
+                    System.out.println(mostCurrentPageResult.getLocation());
+
+                    synchronized (mostCurrentPageResult) {
+                        mostCurrentPageResult.setChanged(false);
+                    }
+                }
+            }
+        }
+
+        // final page work
+
     }
 }

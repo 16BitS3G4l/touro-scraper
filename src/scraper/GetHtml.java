@@ -30,11 +30,11 @@ public class GetHtml {
                 Instant start = Instant.now();
                 String currentURL = urlsToDownload.poll(3, TimeUnit.SECONDS);
                 Document doc = Jsoup.connect(currentURL).get();
-                System.out.println("Getting HTML for: " + currentURL);
+                //System.out.println("Getting HTML for: " + currentURL);
                 Instant finish = Instant.now();
                 long sleepTime = getSleepTime(start, finish);
                 downloadedPages.add(doc);
-                System.out.println("Sleeping for miliseconds: " + sleepTime);
+                //System.out.println("Sleeping for miliseconds: " + sleepTime);
                 Thread.sleep(sleepTime);
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
