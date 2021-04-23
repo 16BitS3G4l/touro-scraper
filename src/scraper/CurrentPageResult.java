@@ -10,6 +10,34 @@ public class CurrentPageResult {
     private ArrayList<String> dates;
     private ArrayList<String> facebookLinks;
 
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    private String location = "";
+    private boolean changed = false; // so the UI thread can wait until CurrentPageResult has been updated to look at it again, rather than keep polling it's data
+    private boolean finalPage = false; // to let the program know that the final page has been reached
+
+    public boolean isFinalPage() {
+        return finalPage;
+    }
+
+    public void setFinalPage(boolean finalPage) {
+        this.finalPage = finalPage;
+    }
+
+    public void setChanged(boolean changed) {
+        this.changed = changed;
+    }
+
+    public boolean isChanged() {
+        return changed;
+    }
+
     public ArrayList<String> getInternalLinks() {
         return internalLinks;
     }

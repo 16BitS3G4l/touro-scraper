@@ -23,12 +23,14 @@ public class ScrapeHtml implements Runnable {
     LinkedBlockingQueue<String> urlsToDownload;
     Set<String> paintedUrls = new HashSet<>();
     Set<String> syncedPaintedUrls;// all actions should be done through this one.
-    private String[] internalSites = new String[] {"touro.edu", "whatElseGoesHere"};
+    private CurrentPageResult mostCurrentPageResult;
+    private String[] internalSites = new String[] {"touro.edu"};
 
-    public ScrapeHtml(LinkedBlockingQueue<String> urlsToDownload, LinkedBlockingQueue<Document> downloadedPages, Set<String> syncedPaintedUrls) {
+    public ScrapeHtml(LinkedBlockingQueue<String> urlsToDownload, LinkedBlockingQueue<Document> downloadedPages, Set<String> syncedPaintedUrls, CurrentPageResult mostRecentPage) {
         this.urlsToDownload = urlsToDownload;
         this.downloadedPages = downloadedPages;
         this.syncedPaintedUrls = syncedPaintedUrls;
+        this.mostCurrentPageResult = mostRecentPage;
     }
 
     @Override
@@ -40,16 +42,24 @@ public class ScrapeHtml implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println("Page to parse: ");
+
+            //System.out.println("Page to parse: ");
             // Do ALL the parsing here
 
             ArrayList<String> internalLinks = getInternalLinks(pageToParse);
             //add internalLinks to urlsToDownload queue, iterate over list adn add to queue
-            for (String url : internalLinks) {
-                urlsToDownload.add(url);
+
+            if(internalLinks != null)
+            {
+                for (String url : internalLinks) {
+
+                    if(syncedPaintedUrls.add(url))
+                        urlsToDownload.add(url);
+                }
             }
+
             // set internalLinks to currentPage's internalLinks in sync block
-            
+
             //external urls
             ArrayList<String> externalLinks = getExternalLinks(pageToParse);
             // set externalLinks to currentPage's externalLinks in sync block
@@ -62,9 +72,24 @@ public class ScrapeHtml implements Runnable {
             ArrayList<String> dates = getDates(pageToParse);  
 
             ArrayList<String> facebookLinks = getFacebookLinks(pageToParse);
-            
 
-            //parse for two non trivial
+
+            if (pageToParse != null) {
+                synchronized (mostCurrentPageResult) {
+                    mostCurrentPageResult.setLocation(pageToParse.location());
+                    mostCurrentPageResult.setInternalLinks(internalLinks);
+                    mostCurrentPageResult.setExternalLinks(externalLinks);
+                    mostCurrentPageResult.setDates(dates);
+                    mostCurrentPageResult.setEmails(emails);
+                    mostCurrentPageResult.setFacebookLinks(facebookLinks);
+                    mostCurrentPageResult.setPhoneNumbers(phoneNumbers);
+                    mostCurrentPageResult.setChanged(true);
+                }
+            }
+        }
+
+        synchronized(mostCurrentPageResult) {
+            mostCurrentPageResult.setFinalPage(true);
         }
     }
 
@@ -184,7 +209,7 @@ public class ScrapeHtml implements Runnable {
     }
 
     private boolean isValidExternalUrl(String url) {
-        return url.matches("https://www.(?!touro.edu)[a-zA-Z0-9./]*");
+        return url.matches("https://www.(?!touro.edu)[a-zA-Z0-9./]*") || url.startsWith("./");
     }
 
     private ArrayList<String> getInternalLinks(Document pageToParse) {
@@ -195,9 +220,9 @@ public class ScrapeHtml implements Runnable {
         ArrayList<String> internalUrls = new ArrayList<>();
         links.stream().map((link) -> link.attr("abs:href")).forEachOrdered((url) -> {
             url = cleanedURL(url);
-            boolean add = syncedPaintedUrls.add(url);
+            boolean add = !syncedPaintedUrls.contains(url);
             if (add && isValidInternalURL(url)) {
-                System.out.println(url);
+                //System.out.println(url);
                 //confusing that this func doesnt just get links rather actually adds them to urlsToDownload queue
                 internalUrls.add(url);
             }
