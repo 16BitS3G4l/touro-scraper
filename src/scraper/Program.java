@@ -13,7 +13,7 @@ public class Program {
 
     // https://stackoverflow.com/questions/616484/how-to-use-concurrentlinkedqueue/616505
     public static void main(String[] args) throws InterruptedException {
-        final String START_URL = "https://touro.edu";
+        final String START_URL = "https://www.touro.edu/";
         LinkedBlockingQueue<Document> downloadedPages = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<String> urlsToDownload = new LinkedBlockingQueue<>();
         Set<String> paintedUrls = new HashSet<>();
@@ -29,6 +29,9 @@ public class Program {
             }
         }.start();
 
+        // We need to color/paint the root
+        syncedPaintedUrls.add("https://www.touro.edu/");
+
         // This will not find anything and then just break out. find a better way.
         // to make sure that the scraper will start.
         Thread.sleep(10000);
@@ -42,18 +45,26 @@ public class Program {
         thread1.start();
         thread2.start();
 
+
         while(!mostCurrentPageResult.isFinalPage()) {
 
-            if(mostCurrentPageResult.isChanged()) {
-                // delete the previous results and display the most current ones
-                // we can clear the terminal and then print our new results (option 1)
+            synchronized(mostCurrentPageResult) {
+                if (mostCurrentPageResult.isChanged()) {
 
-                synchronized (mostCurrentPageResult) {
-                    mostCurrentPageResult.setChanged(false);
+                    // delete the previous results and display the most current ones
+                    // we can clear the terminal and then print our new results (option 1)
+                    for(int i = 0; i < 100; i++)
+                        System.out.println();
+
+                    System.out.println("URL of Webpage: ");
+                    System.out.println(mostCurrentPageResult.getLocation());
+
+                    synchronized (mostCurrentPageResult) {
+                        mostCurrentPageResult.setChanged(false);
+                    }
                 }
             }
         }
-
 
         // final page work
 

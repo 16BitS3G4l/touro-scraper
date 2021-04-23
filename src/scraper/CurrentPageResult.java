@@ -9,6 +9,16 @@ public class CurrentPageResult {
     private ArrayList<String> emails;
     private ArrayList<String> dates;
     private ArrayList<String> facebookLinks;
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    private String location = "";
     private boolean changed = false; // so the UI thread can wait until CurrentPageResult has been updated to look at it again, rather than keep polling it's data
     private boolean finalPage = false; // to let the program know that the final page has been reached
 

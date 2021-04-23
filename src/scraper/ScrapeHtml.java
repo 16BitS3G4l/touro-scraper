@@ -53,9 +53,8 @@ public class ScrapeHtml implements Runnable {
             {
                 for (String url : internalLinks) {
 
-                    if (!syncedPaintedUrls.contains(url)) {
+                    if(syncedPaintedUrls.add(url))
                         urlsToDownload.add(url);
-                    }
                 }
             }
 
@@ -75,14 +74,17 @@ public class ScrapeHtml implements Runnable {
             ArrayList<String> facebookLinks = getFacebookLinks(pageToParse);
 
 
-            synchronized(mostCurrentPageResult) {
-                mostCurrentPageResult.setInternalLinks(internalLinks);
-                mostCurrentPageResult.setExternalLinks(externalLinks);
-                mostCurrentPageResult.setDates(dates);
-                mostCurrentPageResult.setEmails(emails);
-                mostCurrentPageResult.setFacebookLinks(facebookLinks);
-                mostCurrentPageResult.setPhoneNumbers(phoneNumbers);
-                mostCurrentPageResult.setChanged(true);
+            if (pageToParse != null) {
+                synchronized (mostCurrentPageResult) {
+                    mostCurrentPageResult.setLocation(pageToParse.location());
+                    mostCurrentPageResult.setInternalLinks(internalLinks);
+                    mostCurrentPageResult.setExternalLinks(externalLinks);
+                    mostCurrentPageResult.setDates(dates);
+                    mostCurrentPageResult.setEmails(emails);
+                    mostCurrentPageResult.setFacebookLinks(facebookLinks);
+                    mostCurrentPageResult.setPhoneNumbers(phoneNumbers);
+                    mostCurrentPageResult.setChanged(true);
+                }
             }
         }
 
@@ -218,9 +220,9 @@ public class ScrapeHtml implements Runnable {
         ArrayList<String> internalUrls = new ArrayList<>();
         links.stream().map((link) -> link.attr("abs:href")).forEachOrdered((url) -> {
             url = cleanedURL(url);
-            boolean add = syncedPaintedUrls.add(url);
+            boolean add = !syncedPaintedUrls.contains(url);
             if (add && isValidInternalURL(url)) {
-                System.out.println(url);
+                //System.out.println(url);
                 //confusing that this func doesnt just get links rather actually adds them to urlsToDownload queue
                 internalUrls.add(url);
             }
