@@ -2,6 +2,7 @@ package scraper;
 
 import org.jsoup.nodes.Document;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,13 +19,22 @@ public class Program {
         LinkedBlockingQueue<String> urlsToDownload = new LinkedBlockingQueue<>();
         Set<String> paintedUrls = new HashSet<>();
         Set<String> syncedPaintedUrls = Collections.synchronizedSet(paintedUrls);   // all actions should be done through this one.
+
+        Set<Document> inProgessScrapeHtml = new HashSet<>();
+        Set<Document> syncedinProgessScrapeHtml = Collections.synchronizedSet(inProgessScrapeHtml);
+
+        Set<String> inProgessGetHtml = new HashSet<>();
+        Set<String> syncedinProgessGetHtml = Collections.synchronizedSet(inProgessGetHtml);
+
         urlsToDownload.offer(START_URL);
         syncedPaintedUrls.add(START_URL);
+
+        // Convert this all the synced stuff to an object and pass that object around.
 
         new Thread() {
             @Override
             public void run() {
-                GetHtml getHtml = new GetHtml(urlsToDownload, downloadedPages);
+                GetHtml getHtml = new GetHtml(urlsToDownload, downloadedPages, syncedinProgessScrapeHtml, syncedinProgessGetHtml);
                 getHtml.downloadWebPages();
             }
         }.start();
@@ -34,12 +44,12 @@ public class Program {
 
         // This will not find anything and then just break out. find a better way.
         // to make sure that the scraper will start.
-        Thread.sleep(10000);
-//        System.out.println(downloadedPages);
+        Thread.sleep(1000);
+
 
         CurrentPageResult mostCurrentPageResult = new CurrentPageResult();
 
-        ScrapeHtml scrapeHtml = new ScrapeHtml(urlsToDownload, downloadedPages, syncedPaintedUrls, mostCurrentPageResult);
+        ScrapeHtml scrapeHtml = new ScrapeHtml(urlsToDownload, downloadedPages, syncedPaintedUrls, mostCurrentPageResult, syncedinProgessScrapeHtml, syncedinProgessGetHtml);
         Thread thread1 = new Thread(scrapeHtml);
         Thread thread2 = new Thread(scrapeHtml);
         thread1.start();

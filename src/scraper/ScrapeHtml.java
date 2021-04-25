@@ -19,26 +19,35 @@ import java.util.regex.Pattern;
 public class ScrapeHtml implements Runnable {
 
 
+    Set<String> syncedinProgessGetHtml;
+    Set<Document> syncedinProgessScrapeHtml;
     LinkedBlockingQueue<Document> downloadedPages;
     LinkedBlockingQueue<String> urlsToDownload;
     Set<String> paintedUrls = new HashSet<>();
     Set<String> syncedPaintedUrls;// all actions should be done through this one.
+
+    Set<Document> inProgessParse;
     private CurrentPageResult mostCurrentPageResult;
     private String[] internalSites = new String[] {"touro.edu"};
 
-    public ScrapeHtml(LinkedBlockingQueue<String> urlsToDownload, LinkedBlockingQueue<Document> downloadedPages, Set<String> syncedPaintedUrls, CurrentPageResult mostRecentPage) {
+    public ScrapeHtml(LinkedBlockingQueue<String> urlsToDownload, LinkedBlockingQueue<Document> downloadedPages,
+                      Set<String> syncedPaintedUrls, CurrentPageResult mostRecentPage,
+                      Set<Document> syncedinProgessScrapeHtml, Set<String> syncedinProgessGetHtml) {
         this.urlsToDownload = urlsToDownload;
         this.downloadedPages = downloadedPages;
         this.syncedPaintedUrls = syncedPaintedUrls;
         this.mostCurrentPageResult = mostRecentPage;
+        this.syncedinProgessScrapeHtml = syncedinProgessScrapeHtml;
+        this.syncedinProgessGetHtml = syncedinProgessGetHtml;
     }
 
     @Override
     public void run() {
-        while (!downloadedPages.isEmpty() || !urlsToDownload.isEmpty()) {
+        while (!downloadedPages.isEmpty() || !urlsToDownload.isEmpty() || !syncedinProgessScrapeHtml.isEmpty() || !syncedinProgessGetHtml.isEmpty()) {
             Document pageToParse = null;
             try {
                 pageToParse = downloadedPages.poll(3, TimeUnit.SECONDS);
+                syncedinProgessScrapeHtml.add(pageToParse);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -86,9 +95,11 @@ public class ScrapeHtml implements Runnable {
                     mostCurrentPageResult.setChanged(true);
                 }
             }
+            syncedinProgessScrapeHtml.remove(pageToParse);
         }
 
         synchronized(mostCurrentPageResult) {
+            System.out.println("here");
             mostCurrentPageResult.setFinalPage(true);
         }
     }

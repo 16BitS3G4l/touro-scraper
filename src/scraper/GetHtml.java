@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -16,26 +17,30 @@ public class GetHtml {
 
     LinkedBlockingQueue<Document> downloadedPages;
     LinkedBlockingQueue<String> urlsToDownload;
+    Set<Document> syncedinProgessScrapeHtml;
+    Set<String> syncedinProgessGetHtml;
 
-
-    public GetHtml(LinkedBlockingQueue<String> urlsToDownload, LinkedBlockingQueue<Document> downloadedPages) {
+    public GetHtml(LinkedBlockingQueue<String> urlsToDownload, LinkedBlockingQueue<Document> downloadedPages,
+                   Set<Document> syncedinProgessScrapeHtml, Set<String> syncedinProgessGetHtml) {
         this.urlsToDownload = urlsToDownload;
         this.downloadedPages = downloadedPages;
+        this.syncedinProgessScrapeHtml = syncedinProgessScrapeHtml;
+        this.syncedinProgessGetHtml = syncedinProgessGetHtml;
     }
 
     public void downloadWebPages() {
-        while (!urlsToDownload.isEmpty()) {
+        while (!urlsToDownload.isEmpty() || !downloadedPages.isEmpty() || !syncedinProgessScrapeHtml.isEmpty() || !syncedinProgessGetHtml.isEmpty()) {
             try {
                 // Note this will wait forever, if there is not element
                 Instant start = Instant.now();
                 String currentURL = urlsToDownload.poll(3, TimeUnit.SECONDS);
+                syncedinProgessGetHtml.add(currentURL);
                 Document doc = Jsoup.connect(currentURL).get();
-                //System.out.println("Getting HTML for: " + currentURL);
                 Instant finish = Instant.now();
                 long sleepTime = getSleepTime(start, finish);
                 downloadedPages.add(doc);
-                //System.out.println("Sleeping for miliseconds: " + sleepTime);
                 Thread.sleep(sleepTime);
+                syncedinProgessGetHtml.remove(currentURL);
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
