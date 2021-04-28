@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class GetHtml {
+public class GetHtml implements Runnable {
     final int DEFAULT_SLEEP_TIME = 10000;
 
     LinkedBlockingQueue<Document> downloadedPages;
@@ -50,6 +50,11 @@ public class GetHtml {
     private long getSleepTime(Instant start, Instant finish) {
         long secondsElapsed = Duration.between(start, finish).toMillis();
         return Math.max(secondsElapsed, DEFAULT_SLEEP_TIME);
+    }
+
+    @Override
+    public void run() {
+        downloadWebPages();
     }
 
 
