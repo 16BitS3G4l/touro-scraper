@@ -5,6 +5,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.security.cert.TrustAnchor;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,18 +28,20 @@ public class ScrapeHtml implements Runnable {
     Set<String> syncedPaintedUrls;// all actions should be done through this one.
 
     Set<Document> inProgessParse;
+    DatabasePush databasePush;
     private CurrentPageResult mostCurrentPageResult;
     private String[] internalSites = new String[] {"touro.edu"};
 
     public ScrapeHtml(LinkedBlockingQueue<String> urlsToDownload, LinkedBlockingQueue<Document> downloadedPages,
                       Set<String> syncedPaintedUrls, CurrentPageResult mostRecentPage,
-                      Set<Document> syncedinProgessScrapeHtml, Set<String> syncedinProgessGetHtml) {
+                      Set<Document> syncedinProgessScrapeHtml, Set<String> syncedinProgessGetHtml, DatabasePush databasePush) {
         this.urlsToDownload = urlsToDownload;
         this.downloadedPages = downloadedPages;
         this.syncedPaintedUrls = syncedPaintedUrls;
         this.mostCurrentPageResult = mostRecentPage;
         this.syncedinProgessScrapeHtml = syncedinProgessScrapeHtml;
         this.syncedinProgessGetHtml = syncedinProgessGetHtml;
+        this.databasePush = databasePush;
     }
 
     @Override
@@ -52,11 +55,7 @@ public class ScrapeHtml implements Runnable {
                 e.printStackTrace();
             }
 
-            //System.out.println("Page to parse: ");
-            // Do ALL the parsing here
-
             ArrayList<String> internalLinks = getInternalLinks(pageToParse);
-            //add internalLinks to urlsToDownload queue, iterate over list adn add to queue
 
             if(internalLinks != null)
             {
@@ -67,20 +66,12 @@ public class ScrapeHtml implements Runnable {
                 }
             }
 
-            // set internalLinks to currentPage's internalLinks in sync block
-
-            //external urls
             ArrayList<String> externalLinks = getExternalLinks(pageToParse);
-            // set externalLinks to currentPage's externalLinks in sync block
-
-            ArrayList<String> phoneNumbers = getPhoneNumbers(pageToParse);
-            //set phone numbers to currentPages phon number list in sync block
-
-            ArrayList<String> emails = getEmails(pageToParse);     
-            
-            ArrayList<String> dates = getDates(pageToParse);  
-
             ArrayList<String> facebookLinks = getFacebookLinks(pageToParse);
+
+            ArrayList<String> emails = getEmails(pageToParse);
+            ArrayList<String> dates = getDates(pageToParse);
+            ArrayList<String> phoneNumbers = getPhoneNumbers(pageToParse);
 
 
             if (pageToParse != null) {
@@ -93,6 +84,14 @@ public class ScrapeHtml implements Runnable {
                     mostCurrentPageResult.setFacebookLinks(facebookLinks);
                     mostCurrentPageResult.setPhoneNumbers(phoneNumbers);
                     mostCurrentPageResult.setChanged(true);
+                }
+
+                synchronized(databasePush) {
+                    try {
+                        databasePush.insertScrapedPage(pageToParse.location(), emails, dates, externalLinks, internalLinks, facebookLinks, phoneNumbers);
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }
                 }
             }
             syncedinProgessScrapeHtml.remove(pageToParse);

@@ -36,17 +36,8 @@ public class Program {
             System.out.println(e.getMessage());
         }
 
-        LinkedBlockingQueue<Document> downloadedPages = dbPull.getDownloadedPages();
-
-        if(downloadedPages == null)
-            downloadedPages = new LinkedBlockingQueue<>();
-
-
-        LinkedBlockingQueue<String> urlsToDownload = dbPull.getUrlsToDownload();
-
-        if(urlsToDownload == null)
-            urlsToDownload = new LinkedBlockingQueue<>();
-
+        LinkedBlockingQueue<Document> downloadedPages = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<String> urlsToDownload = new LinkedBlockingQueue<>();
 
         Set<String> paintedUrls = dbPull.getPaintedUrls();
 
@@ -55,20 +46,11 @@ public class Program {
 
         Set<String> syncedPaintedUrls = Collections.synchronizedSet(paintedUrls);   // all actions should be done through this one.
 
-
         Set<Document> inProgessScrapeHtml = new HashSet<>();
         Set<Document> syncedinProgessScrapeHtml = Collections.synchronizedSet(inProgessScrapeHtml);
 
         Set<String> inProgessGetHtml = new HashSet<>();
         Set<String> syncedinProgessGetHtml = Collections.synchronizedSet(inProgessGetHtml);
-
-        // Before doing anything, we need to load all data from the database,
-        // if it already has data, we need to load it, otherwise just work on the current data
-        // and inset data, when necessary, into the database so if we interrupt execution, we can
-        // immediately resume progress from the most recent checkpoint.
-
-        // We need to identify what data we will store in the database (so what data we need to retrieve, and
-        // what data we need to update when we change it.
 
         urlsToDownload.offer(START_URL);
         syncedPaintedUrls.add(START_URL);
@@ -76,16 +58,14 @@ public class Program {
         GetHtml getHtml = new GetHtml(urlsToDownload, downloadedPages, syncedinProgessScrapeHtml, syncedinProgessGetHtml);
         new Thread(getHtml).start();
 
-        // We need to color/paint the root
-        syncedPaintedUrls.add("https://www.touro.edu/");
-
         // This will not find anything and then just break out. find a better way.
         // to make sure that the scraper will start.
         Thread.sleep(1000);
 
         CurrentPageResult mostCurrentPageResult = new CurrentPageResult();
+        DatabasePush databasePush = new DatabasePush(conn);
 
-        ScrapeHtml scrapeHtml = new ScrapeHtml(urlsToDownload, downloadedPages, syncedPaintedUrls, mostCurrentPageResult, syncedinProgessScrapeHtml, syncedinProgessGetHtml);
+        ScrapeHtml scrapeHtml = new ScrapeHtml(urlsToDownload, downloadedPages, syncedPaintedUrls, mostCurrentPageResult, syncedinProgessScrapeHtml, syncedinProgessGetHtml, databasePush);
         Thread thread1 = new Thread(scrapeHtml);
         Thread thread2 = new Thread(scrapeHtml);
         thread1.start();
@@ -111,8 +91,5 @@ public class Program {
                 }
             }
         }
-
-        // final page work
-
     }
 }

@@ -31,14 +31,17 @@ public class GetHtml implements Runnable {
     public void downloadWebPages() {
         while (!urlsToDownload.isEmpty() || !downloadedPages.isEmpty() || !syncedinProgessScrapeHtml.isEmpty() || !syncedinProgessGetHtml.isEmpty()) {
             try {
-                // Note this will wait forever, if there is not element
                 Instant start = Instant.now();
+
                 String currentURL = urlsToDownload.poll(3, TimeUnit.SECONDS);
                 syncedinProgessGetHtml.add(currentURL);
                 Document doc = Jsoup.connect(currentURL).get();
+
                 Instant finish = Instant.now();
-                long sleepTime = getSleepTime(start, finish);
+
                 downloadedPages.add(doc);
+
+                long sleepTime = getSleepTime(start, finish);
                 Thread.sleep(sleepTime);
                 syncedinProgessGetHtml.remove(currentURL);
             } catch (IOException | InterruptedException e) {
